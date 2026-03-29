@@ -50,12 +50,46 @@ int GetModuleBaseAddress(char application[], DWORD pid, BYTE** baseAddr) {
     return valid;
 }
 
+void printBytes(BYTE* buf, size_t size) {
+    printf("\n");
+    for (size_t i = 0; i < size; i++) {
+        printf("%02X ", buf[i]);
+    }
+    printf("\n");
+}
 
+void inspect(BYTE *buf) {
+    int i;
+    float f;
+    double d;
+    uintptr_t p;
+
+    memcpy(&i, buf, sizeof(i));
+    memcpy(&f, buf, sizeof(f));
+    memcpy(&d, buf, sizeof(d));
+    memcpy(&p, buf, sizeof(p));
+
+    printf("\nint: %d", i);
+    printf("\nfloat: %f", f);
+    printf("\ndouble: %f", d);
+    printf("\nptr: %p", (void*)p);
+}
+
+void printAscii(BYTE* buf, size_t size) {
+    printf("\n");
+    for (size_t i = 0; i < size; i++) {
+        if (buf[i] >= 32 && buf[i] <= 126) {
+            printf("%c", buf[i]);
+        } else {
+            printf(".");
+        }
+    }
+    printf("\n");
+}
 
 int main() {
 
     char program[] = "RobloxPlayerBeta.exe";
-
 
     DWORD pid = -1;
     HANDLE procHandle = NULL;
@@ -63,11 +97,15 @@ int main() {
     int handleValid = targetProcessHandle(program, &procHandle, &pid);
     int baseAddrValid = GetModuleBaseAddress(program, pid, &baseAddr);
 
-    int value = 0;
+    BYTE buf[32];
 
     while (1) {
-        if (ReadProcessMemory(procHandle, baseAddr + 0xec, &value, sizeof(value), NULL)) {
-            printf("\nValue: %d", value);
+        if (ReadProcessMemory(procHandle, baseAddr + 0x7936ef0 + 0xF90, buf, sizeof(buf), NULL)) {
+            
+            
+            //printBytes(buf, sizeof(buf));
+            inspect(buf);
+            printAscii(buf, sizeof(buf));
         } else {
             printf("\nDidn't work");
         }
