@@ -1,4 +1,4 @@
-#include "ProcessParameters.h"
+#include "headers.h"
 #include <tlhelp32.h>
 #include <windows.h>
 #include <stdio.h>
@@ -6,6 +6,17 @@
 int getProcessHandle(Process *program) {
     // false by default
     int valid = 0;
+    
+    // check if our struct has a pid (then use that instead of name)
+    if (program->progID != 0) {
+        program->progHandle = OpenProcess(DEFAULT_PROCESS_PERMS, FALSE, program->progID);
+        if (program->progHandle && program->progHandle != NULL) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    
     // CreatToolhelp32Snapshot takes all processes
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snapshot == INVALID_HANDLE_VALUE) {
@@ -64,5 +75,5 @@ int getProcessModule(Process *program) {
 
 // Print values within struct
 void printStruct(Process *program) {
-    printf("\nApplication: %s\nPID: %lu\nHandle: %p\nBase Address: %p", program->appName, program->progID, program->progHandle, program->baseAddr);
+    printf("\nApplication: %s\nPID: %lu\nHandle: %lu\nBase Address: %p", program->appName, program->progID, program->progHandle, program->baseAddr);
 }
